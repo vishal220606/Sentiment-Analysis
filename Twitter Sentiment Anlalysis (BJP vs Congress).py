@@ -1,9 +1,10 @@
+'''
 
+#Introduction
+Sentiment analysis has been predominantly used in data science for analysis of customer feedbacks on products and reviews. 
+They are used to understand user ratings on different kinds of products, hospitality services like travel, hotel bookings.
 
-Introduction
-Sentiment analysis has been predominantly used in data science for analysis of customer feedbacks on products and reviews. They are used to understand user ratings on different kinds of products, hospitality services like travel, hotel bookings.
-
-It has also become popular to analyse user tweets?—?positive, negative or neutral by crawling twitter through APIs.
+It has also become popular to analyse user tweets?â€”?positive, negative or neutral by crawling twitter through APIs.
 
 In this article, we talk about sentiment analysis of the upcoming Lokshobha Elections for Congress and BJP by crawling tweets from different hashtags of either parties, party leaders, as well as news hashtags like NDTV. The sentiments analysed covers different user-reactions not only restricted to positive or negative sentiments but covers an in-depth analysis of various positive and negative moods along with the results of different ML models.
 
@@ -17,7 +18,7 @@ The objective of this blog is to highlight mechanisms for labelling tweets, and 
 
 Crawl Weekly tweets and Merge:
 We crawl tweets on a weekly basis and merge them with previous weeks to have an overall prediction over a period of few months. The system is designed to learn from tweets every week and consolidates results by eliminating duplicate tweets. It preserves the retweet counts to understand the impact of higher number of retweets.
-
+'''
 list_BJP = []
 list_Cong = []
 if('BJP' in file_[i]):
@@ -27,27 +28,34 @@ if ('Cong' in file_[i]):
 list_BJP.append(df_BJP)
 list_Cong.append(df_Cong)
 df_BJP = pd.concat(list_BJP, axis = 0, ignore_index = True)
-df_BJP = df_BJP.drop_duplicates(subset=['created_at', 'full_text’])#dropping retweets with same text posted at same time
+df_BJP = df_BJP.drop_duplicates(subset=['created_at', 'full_textâ€™])#dropping retweets with same text posted at same time
 df_BJP = df_BJP[df_BJP.full_text != 'full_text']
 
 df_Cong = pd.concat(list_Cong, axis = 0, ignore_index = True)
 df_Cong = df_Cong.drop_duplicates(subset=['created_at', 'full_text'])
 df_Cong = df_Cong[df_Cong.full_text != 'full_text']
-Crawl Mood Words and labelling unstructured data:
-The mood vocabulary is built using english word repository available in the internet. The following mood labels Joy, Sadness, Arousal, Dominance, Neutral, Anger, Fear, Faith(Support) were assigned to tweets by taking the strongest mood in the sentence, by taking each word from the sentence into account, along with the emoji in consideration. For example, the overall mood of the sentence is Dominance when each word in the sentence have the following moods.
 
-[‘dominance’, ‘dominance’, ‘dominance’, ‘dominance’, ‘dominance’, ‘joy’, ‘arousal’, ‘dominance’]
+'''
+ Crawl Mood Words and labelling unstructured data:
+The mood vocabulary is built using english word repository available in the internet. 
+The following mood labels Joy, Sadness, Arousal, Dominance, Neutral, Anger, Fear, Faith(Support) 
+were assigned to tweets by taking the strongest mood in the sentence, by taking each word from the sentence into account,
+along with the emoji in consideration. For example, the overall mood of the sentence is Dominance when each word in the 
+sentence have the following moods.
+'''
+[â€˜dominanceâ€™, â€˜dominanceâ€™, â€˜dominanceâ€™, â€˜dominanceâ€™, â€˜dominanceâ€™, â€˜joyâ€™, â€˜arousalâ€™, â€˜dominanceâ€™]
 
 max_mood_item = max(mood_freq_dist.items(), key=operator.itemgetter(1))[0]
-The sentiment of each word is derived by assigning an affectual score to it . The lexicon dictionary for 25,000 words are dowloaded from NRC Word -Emotion Association Lexicon (Reference 2). If certain words in a sentence are missing from Vader or the specific mood type is missing, TextBlob is used to determine positive/negative sentiment of the word. For example, for the following tweet “I request all fellow Indians to get rid of this clown coming elections. Please vote wisely”, the word “wisely” encounters a Valence score of 0.878, but it does not differentiate between positive (Joy)/negative (Sadness/Anger) mood, which necessitates a further lookup of word polarity through TextBlob. Finally with a positive score of 0.7 its labelled as sentiment of “Joy”.
+'''
+The sentiment of each word is derived by assigning an affectual score to it . The lexicon dictionary for 25,000 words are dowloaded from NRC Word -Emotion Association Lexicon (Reference 2). If certain words in a sentence are missing from Vader or the specific mood type is missing, TextBlob is used to determine positive/negative sentiment of the word. For example, for the following tweet â€œI request all fellow Indians to get rid of this clown coming elections. Please vote wiselyâ€, the word â€œwiselyâ€ encounters a Valence score of 0.878, but it does not differentiate between positive (Joy)/negative (Sadness/Anger) mood, which necessitates a further lookup of word polarity through TextBlob. Finally with a positive score of 0.7 its labelled as sentiment of â€œJoyâ€.
 
-While affectual score and TextBlob determines mood of each word, SentimentIntensityAnalyzer is used to calculate the overall polarity of a sentence. It uses Vader’s lexicon (Reference 2) which rates individual words (present in the lexicon) in a sentence on a scale of highly negative to highly positive.
+While affectual score and TextBlob determines mood of each word, SentimentIntensityAnalyzer is used to calculate the overall polarity of a sentence. It uses Vaderâ€™s lexicon (Reference 2) which rates individual words (present in the lexicon) in a sentence on a scale of highly negative to highly positive.
 
-For example, for a tweet, “We stand rock solid behind you @narendramodi Our party has performed well under all odds, we will do better in” has few words in the lexicon with score as “solid”: 0.6, “party” : 1.7, “well” :1.1 and “better” 1.9
+For example, for a tweet, â€œWe stand rock solid behind you @narendramodi Our party has performed well under all odds, we will do better inâ€ has few words in the lexicon with score as â€œsolidâ€: 0.6, â€œpartyâ€ : 1.7, â€œwellâ€ :1.1 and â€œbetterâ€ 1.9
 
 These word ratings help to derive four sentiment metrics to represent the proportion the tweet falls under it.
 
-‘compound’: 0.8074, ‘neg’: 0.0, ‘neu’: 0.632, ‘pos’: 0.368
+â€˜compoundâ€™: 0.8074, â€˜negâ€™: 0.0, â€˜neuâ€™: 0.632, â€˜posâ€™: 0.368
 
 This explains the tweet is how much positive, negative or neutral. The compound score have been standardised to range between -1 and 1 and is calculated by calculating the normalized sum (normalize(sum_s)) of all of individual word ratings (0.6, 1.7, 1.1, 1.9) present in the lexicon.
 
@@ -60,17 +68,17 @@ mplt.title('Tweet Intensity for ' + labels[i])
 mplt.xlabel('Sentiment Intensity')
 mplt.ylabel('Moods')
 mplt.show()
-All tweets vary in intensity from -1 to +1. As the below figures shows strong positive sentiments like “Joy” and “Faith” incline more 0 to +1 for both BJP and Congress, while negative sentiments like “Anger” and “Sadness” incline more between -1 to 0. “Neutral” sentiment is centred around zero. Sentiments like “Arousal” and “Dominance” are more or less distributed equally between -1 to +1 which signify they can be either tweeted in a positive or negative mind.
+All tweets vary in intensity from -1 to +1. As the below figures shows strong positive sentiments like â€œJoyâ€ and â€œFaithâ€ incline more 0 to +1 for both BJP and Congress, while negative sentiments like â€œAngerâ€ and â€œSadnessâ€ incline more between -1 to 0. â€œNeutralâ€ sentiment is centred around zero. Sentiments like â€œArousalâ€ and â€œDominanceâ€ are more or less distributed equally between -1 to +1 which signify they can be either tweeted in a positive or negative mind.
 
-For example, the tweet “In 2014 when Modi elected PM candidate, people eected change will happen” records “Dominance” with positive sentiment . While the tweet “2019 elections will be fought on completely different lines’, says @amitmalviya, National Spokesperson, BJP in conversation” records a negative sentiment because of the word “fought”. SentimentIntensityAnalyzer calculates the compound metric of the tweet as -0.3182, while positive, negative and neutral scores are 0.0, 0.247 and 0.753 respectively. Further rating the word “fought” in terms of “Valence”?—?(Joy/Sadness/Anger/Fear/Faith), “Arousal” or “Dominance”, the measuremnets are “Valence” : 0.531, “Arousal” : 0.809, “Dominance” : 0.868, justifying the predominance of “Dominance” mood.
+For example, the tweet â€œIn 2014 when Modi elected PM candidate, people eected change will happenâ€ records â€œDominanceâ€ with positive sentiment . While the tweet â€œ2019 elections will be fought on completely different linesâ€™, says @amitmalviya, National Spokesperson, BJP in conversationâ€ records a negative sentiment because of the word â€œfoughtâ€. SentimentIntensityAnalyzer calculates the compound metric of the tweet as -0.3182, while positive, negative and neutral scores are 0.0, 0.247 and 0.753 respectively. Further rating the word â€œfoughtâ€ in terms of â€œValenceâ€?â€”?(Joy/Sadness/Anger/Fear/Faith), â€œArousalâ€ or â€œDominanceâ€, the measuremnets are â€œValenceâ€ : 0.531, â€œArousalâ€ : 0.809, â€œDominanceâ€ : 0.868, justifying the predominance of â€œDominanceâ€ mood.
 
-Similarly, both positive and negative sentiments can be observed with “Arousal” mood. “Arousal” incorporates any feeling that causes state change or prompts to rise and undertake any activity. The tweet “Govt today introduced a bill in to make provisions regarding recognition of, drawing opposition from the as well as the CPI(M) which staged a walkout calling it a ‘draconian and unconstitutional’ legislation” records a compound score of -0.3182 showing a negative “Arousal” sentiment. While the tweet “God bless you all. Now do the job well, Dems, it’s been way too long since it was done properly. Show them how it’s done” is a positive “Arousal” sentiment with a compound score of 0.95 .
-
-
-The upper and bottom figures demonstrate how sentiments differ for Congress and BJP. The most visually distinguishing aspects are seen in the 2 sentiments “Faith” and “Arousal”. BJP records a higher recording in “Faith” while Congress shows higher predominance of “Arousal”.
+Similarly, both positive and negative sentiments can be observed with â€œArousalâ€ mood. â€œArousalâ€ incorporates any feeling that causes state change or prompts to rise and undertake any activity. The tweet â€œGovt today introduced a bill in to make provisions regarding recognition of, drawing opposition from the as well as the CPI(M) which staged a walkout calling it a â€˜draconian and unconstitutionalâ€™ legislationâ€ records a compound score of -0.3182 showing a negative â€œArousalâ€ sentiment. While the tweet â€œGod bless you all. Now do the job well, Dems, itâ€™s been way too long since it was done properly. Show them how itâ€™s doneâ€ is a positive â€œArousalâ€ sentiment with a compound score of 0.95 .
 
 
-The following figure illustrates tweet that belongs to both BJP and Congress. “Dominance” is still seen as the predominant mood. A sample tweet involving both parties : “Very close fight in . The difference between BJP and Congress not too many seats”?—?— clearly shows close and stiff competition between the two.
+The upper and bottom figures demonstrate how sentiments differ for Congress and BJP. The most visually distinguishing aspects are seen in the 2 sentiments â€œFaithâ€ and â€œArousalâ€. BJP records a higher recording in â€œFaithâ€ while Congress shows higher predominance of â€œArousalâ€.
+
+
+The following figure illustrates tweet that belongs to both BJP and Congress. â€œDominanceâ€ is still seen as the predominant mood. A sample tweet involving both parties : â€œVery close fight in . The difference between BJP and Congress not too many seatsâ€?â€”?â€” clearly shows close and stiff competition between the two.
 
 
 Tweet Analytics
@@ -99,16 +107,16 @@ ax2.set_title("LokShobha Elections 2019 " + labels[i+1] + " Sentiments", fontsiz
 g = sns.countplot(x="mood", data=df_BJP,  palette="PuBuGn_d",  ax=ax1, order = df_BJP['mood'].value_counts().index)
 g = sns.countplot(x="mood", data=df_Cong,  palette="PuBuGn_d",  ax=ax2, order = df_BJP['mood'].value_counts().index)
 mplt.show()
-The different mood frequencies show public reactions towards both the parties before elections. “Dominance” mood dominates in case of both the parties followed by “Joy” mood. SNS countplot provides functionality to plot total frequency distribution of each individual mood which helps to compare within party different moods as well compare a specific mood for both the parties. For instance, for the following graphs of BJP and Congress shows the total number of tweets received for BJP is more than Congress and consequently each corresponding mood gets a higher percentage of tweets for BJP than Congress.
+The different mood frequencies show public reactions towards both the parties before elections. â€œDominanceâ€ mood dominates in case of both the parties followed by â€œJoyâ€ mood. SNS countplot provides functionality to plot total frequency distribution of each individual mood which helps to compare within party different moods as well compare a specific mood for both the parties. For instance, for the following graphs of BJP and Congress shows the total number of tweets received for BJP is more than Congress and consequently each corresponding mood gets a higher percentage of tweets for BJP than Congress.
 
 
 Sentiment Comparisions
 Sentiment Representation by WordCloud
 The different kinds of tweet sentiments are represented by means of different WordClouds. WordClouds are ideal representatives of labelled sentiments as the most common words specific to a mood appear bigger and bolded than other less frequent words. WordClouds are fast and easy mechanism of representing the most relevant words for a theme or context. Its one of the most convenient ways to convey information visually appealing and engaging manner.
 
-Here 2 different sentiments of BJP “Faith/Support” and “Fear” are represented by 2 different WordClouds.
+Here 2 different sentiments of BJP â€œFaith/Supportâ€ and â€œFearâ€ are represented by 2 different WordClouds.
 
-The below code snippet represents all tweets specific to “Faith” sentiment through a WordCloud.
+The below code snippet represents all tweets specific to â€œFaithâ€ sentiment through a WordCloud.
 
 df_faith = df[df['mood'] == 'faith']
 wordcloud = WordCloud(width=1600, height=800, max_font_size=200).generate(str(df_faith.tweet.values))
@@ -118,10 +126,10 @@ mplt.title(labels[i] + "  Faith", fontsize = 10)
 mplt.xlabel('Support/Faith')
 mplt.axis("off")
 mplt.show()
-From the figure below, you can see certain words of BJP like “modi”, “pm” are more frequent and the tweets exibit a tendency to “support”, “congratulate” , “thank” Prime Minister Narendra Modi for country’s development. Words like “vikas”, “development”, “honest team” , “agree”, “sath” , point out positive sentiment towards Modi government. Futher tweets that honour Prime Minister, are visible though words like “hon pm”, “dearest”, “fan”.
+From the figure below, you can see certain words of BJP like â€œmodiâ€, â€œpmâ€ are more frequent and the tweets exibit a tendency to â€œsupportâ€, â€œcongratulateâ€ , â€œthankâ€ Prime Minister Narendra Modi for countryâ€™s development. Words like â€œvikasâ€, â€œdevelopmentâ€, â€œhonest teamâ€ , â€œagreeâ€, â€œsathâ€ , point out positive sentiment towards Modi government. Futher tweets that honour Prime Minister, are visible though words like â€œhon pmâ€, â€œdearestâ€, â€œfanâ€.
 
 
-One kind of negative sentiment like “Fear” for the BJP government is analysed and represented through a separate WordCloud. The “Fear” WordCloud shows a kind of negative feeling, fear/threat in people’s mind from opposition parties.
+One kind of negative sentiment like â€œFearâ€ for the BJP government is analysed and represented through a separate WordCloud. The â€œFearâ€ WordCloud shows a kind of negative feeling, fear/threat in peopleâ€™s mind from opposition parties.
 
 df_fear = df[df['mood'] == 'fear']
 wordcloud = WordCloud(width=1600, height=800, max_font_size=200).generate(str(df_fear.tweet.values))
@@ -131,10 +139,10 @@ mplt.title(labels[i] + "  Fear", fontsize = 10)
 mplt.xlabel('Fear')
 mplt.axis("off")
 mplt.show()
-The “Fear” WordCloud has prominent bolded words like “worry”, “failure”, “mistrust”, “fighting” “worried” , “unexpected” , “wounded” that raises questions about doubts and uncertainities in people’s minds.
+The â€œFearâ€ WordCloud has prominent bolded words like â€œworryâ€, â€œfailureâ€, â€œmistrustâ€, â€œfightingâ€ â€œworriedâ€ , â€œunexpectedâ€ , â€œwoundedâ€ that raises questions about doubts and uncertainities in peopleâ€™s minds.
 
 
-Similarly, doing the sentiment analysis for Congress, 2 different moods one Positive?—?Joy and another negative -Sadness are represented by means of WordCloud. The “Sadness” WordCloud of Congress have clearly distinguishable words like “lost”, “refused”, “defeat”, “destroy”, “crying”, “missed”, “loot”, “slaps” that remark a sense of negative disheartened feeling in the tweets. Further the occurrence of most frequent words “Gandhi” , “Rahul” shows Rahul Gandhi as one of the foremost leaders of Congress.
+Similarly, doing the sentiment analysis for Congress, 2 different moods one Positive?â€”?Joy and another negative -Sadness are represented by means of WordCloud. The â€œSadnessâ€ WordCloud of Congress have clearly distinguishable words like â€œlostâ€, â€œrefusedâ€, â€œdefeatâ€, â€œdestroyâ€, â€œcryingâ€, â€œmissedâ€, â€œlootâ€, â€œslapsâ€ that remark a sense of negative disheartened feeling in the tweets. Further the occurrence of most frequent words â€œGandhiâ€ , â€œRahulâ€ shows Rahul Gandhi as one of the foremost leaders of Congress.
 
 df_sadness = df[df['mood'] == 'sadness']
 wordcloud = WordCloud(width=1600, height=800, max_font_size=200).generate(str(df_sadness.tweet.values))
@@ -145,7 +153,7 @@ mplt.title(labels[i] + "  Sadness", fontsize = 10)
 mplt.axis("off")
 mplt.show()
 
-The positive tweet sentiments for Congress are represented by means of “Joy” WordCloud. Similar to the previous WordCloud “Rahul Gandhi”, “Congress” dominates the word cloud.
+The positive tweet sentiments for Congress are represented by means of â€œJoyâ€ WordCloud. Similar to the previous WordCloud â€œRahul Gandhiâ€, â€œCongressâ€ dominates the word cloud.
 
 df_joy = df[df['mood'] == 'joy']
 wordcloud = WordCloud(width=1600, height=800, max_font_size=200).generate(str(df_joy.tweet.values))
@@ -155,7 +163,7 @@ mplt.xlabel('Joy')
 mplt.title(labels[i] + "  Joy", fontsize = 10)
 mplt.axis("off")
 mplt.show()
-Words like “win”, “good”, “congratulation”, “great”, “truth”, “happy”, “love”, “victory”, “dancing” , “grand” , “cheer” , “laugh” exhibits a strong “Happy” and “Joyous” public sentiment for Congress.
+Words like â€œwinâ€, â€œgoodâ€, â€œcongratulationâ€, â€œgreatâ€, â€œtruthâ€, â€œhappyâ€, â€œloveâ€, â€œvictoryâ€, â€œdancingâ€ , â€œgrandâ€ , â€œcheerâ€ , â€œlaughâ€ exhibits a strong â€œHappyâ€ and â€œJoyousâ€ public sentiment for Congress.
 
 
 N-gram Model
@@ -258,9 +266,9 @@ mplt.title(labels[i])
 mplt.xlabel('Retweet Frequency', fontsize = 7)
 mplt.ylabel('Tweets', fontsize = 7)
 mplt.show()
-The popularity of tweets have been represented with the retweet count . Only first 25 unique retweets are selected. Its seen, that BJP tweets are much more frequent than Congress and ranges between 100–250 while average retweet frequency for Congress is 20–30. The retweet frequency along with the tweet text have been graphically displayed below.
+The popularity of tweets have been represented with the retweet count . Only first 25 unique retweets are selected. Its seen, that BJP tweets are much more frequent than Congress and ranges between 100â€“250 while average retweet frequency for Congress is 20â€“30. The retweet frequency along with the tweet text have been graphically displayed below.
 
 
 
 Conclusion
-This post mainly discusses about labelling tweets from known word dictionaries and rating them between -1 and 1 . It further compares BJP and Congress side by side considering tweet sentiments, frequency of different tweet sentiments, commonly used words in tweets (anargrams 1–2 words), location of users who tweeted as well as the most popular tweets obtained from the retweet count. The following posts will cover on different ML techniques used for NLP, comparing them side by side with different metrics of accuracy like Precision , Recall and F1 Score as well as processing time to train the models. The election results for 2019 is still few months to go and the study hopes to find more interesting results through more weekly tweet crawls.
+This post mainly discusses about labelling tweets from known word dictionaries and rating them between -1 and 1 . It further compares BJP and Congress side by side considering tweet sentiments, frequency of different tweet sentiments, commonly used words in tweets (anargrams 1â€“2 words), location of users who tweeted as well as the most popular tweets obtained from the retweet count. The following posts will cover on different ML techniques used for NLP, comparing them side by side with different metrics of accuracy like Precision , Recall and F1 Score as well as processing time to train the models. The election results for 2019 is still few months to go and the study hopes to find more interesting results through more weekly tweet crawls.
